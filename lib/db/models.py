@@ -30,4 +30,36 @@ class Question(Base):
     answer_id=Column(Integer(), ForeignKey('answers.id'))
 
 
+class Player(Base):
+    __tablename__='players'
+
+    id=Column(Integer(), primary_key=True)
+    username=Column(String())
+    password=Column(String())
+
+class Game(Base):
+    __tablename__='games'
+
+    id=Column(Integer(), primary_key=True)
+    score=Column(Integer())
+    
+    player_id=Column(Integer(), ForeignKey('players.id'))
+    question_1_id=Column(Integer(), ForeignKey('questions.id'))
+    question_2_id=Column(Integer(), ForeignKey('questions.id'))
+    question_3_id=Column(Integer(), ForeignKey('questions.id'))
+    question_4_id=Column(Integer(), ForeignKey('questions.id'))
+    question_5_id=Column(Integer(), ForeignKey('questions.id'))
+    question_6_id=Column(Integer(), ForeignKey('questions.id'))
+    question_7_id=Column(Integer(), ForeignKey('questions.id'))
+    question_8_id=Column(Integer(), ForeignKey('questions.id'))
+    question_9_id=Column(Integer(), ForeignKey('questions.id'))
+    question_10_id=Column(Integer(), ForeignKey('questions.id'))
+    question_11_id=Column(Integer(), ForeignKey('questions.id'))
+    question_12_id=Column(Integer(), ForeignKey('questions.id'))
+    question_13_id=Column(Integer(), ForeignKey('questions.id'))
+    question_13_id=Column(Integer(), ForeignKey('questions.id'))
+    question_15_id=Column(Integer(), ForeignKey('questions.id'))
+
+
+
 
