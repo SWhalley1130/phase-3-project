@@ -234,9 +234,12 @@ if __name__ == '__main__':
     while home_screen=="selection":
         answer=select_mode()
         if answer["mode"]=="Edit Username":
-            while current_player.edit_username(session)==False:
-                pass
-            session.commit()
+            if current_player.username!="admin":
+                while current_player.edit_username(session)==False:
+                    pass
+                session.commit()
+            else:
+                print(warning("Cannot edit admin username."))
         elif answer["mode"]=="Edit Password":
             while current_player.edit_password()==False:
                 pass
