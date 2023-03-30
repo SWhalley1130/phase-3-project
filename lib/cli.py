@@ -257,6 +257,7 @@ if __name__ == '__main__':
             else:
                 print(warning("Cannot delete admin account."))
         elif answer["mode"]=="Play Prior Game":
+            home_screen="play game"
             gamess=session.query(Game).order_by(Game.score).all()
             formatted=[f'ID: {g.id} Score: {g.score}, Player: {session.query(Player).filter(Player.id==g.player_id).first().username}' for g in gamess]
             q=[
