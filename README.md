@@ -1,6 +1,8 @@
+image.png
+
 ## Introduction
 
-Thank you for reading me! This project was built using python 3.8.13 and pip 23.0.1. 
+Thank you for reading me! This project was built using python 3.8.13 and pip 23.0.1. This is my CLI project for phase 3 of the Flatiron School. During this phase I learned python, sql, the concepts of ORM, sqlalchemy, and alembic. In addition to using these technologies and concepts, I used the simple-chalk and inquirer libraries for styling and choice selection, respectively. 
 
 ## Installation 
 
