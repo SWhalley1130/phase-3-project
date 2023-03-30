@@ -5,6 +5,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import simple_chalk as sc
+
+
+basic=sc.green
+warning=sc.red
+
 convention = {
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
 }
@@ -19,6 +25,9 @@ class Answer(Base):
     category=Column(String())
     answer=Column(String())
 
+    def __repr__(self):
+        return f'{self.answer} '
+
 class Question(Base):
     __tablename__='questions'
 
@@ -29,6 +38,10 @@ class Question(Base):
 
     answer_id=Column(Integer(), ForeignKey('answers.id'))
 
+    def __repr__(self):
+        return f'Question: {self.question} ' \
+                  +  f'Answer ID: {self.answer_id}'
+
 
 class Player(Base):
     __tablename__='players'
@@ -36,6 +49,25 @@ class Player(Base):
     id=Column(Integer(), primary_key=True)
     username=Column(String())
     password=Column(String())
+
+    def __repr__(self):
+        return f'Username: {self.username} ' \
+                +  f'Password: {self.password}'
+    
+    def edit_username(self, session):
+        new_username=input(basic("Please enter a new username: "))
+        query=session.query(Player).filter(Player.username==new_username).first()
+        if query!=None:
+            print(warning("That username is already taken"))
+            return False
+        else:
+            self.username=new_username
+            return True
+
+    def edit_password(self):
+        new_password=input(basic("Please enter a new username: "))
+        self.password=new_password
+        return True
 
 class Game(Base):
     __tablename__='games'
@@ -57,7 +89,7 @@ class Game(Base):
     question_11_id=Column(Integer(), ForeignKey('questions.id'))
     question_12_id=Column(Integer(), ForeignKey('questions.id'))
     question_13_id=Column(Integer(), ForeignKey('questions.id'))
-    question_13_id=Column(Integer(), ForeignKey('questions.id'))
+    question_14_id=Column(Integer(), ForeignKey('questions.id'))
     question_15_id=Column(Integer(), ForeignKey('questions.id'))
 
 
