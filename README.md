@@ -4,7 +4,7 @@ Thank you for reading me! This project was built using python 3.8.13 and pip 23.
 
 ## Installation 
 
-Use the package manager pip to install all needed dependencies for the game. Libraries include [sqlalchemy](https://www.sqlalchemy.org/), [alembic](https://alembic.sqlalchemy.org/en/latest/), [inquierer] (https://python-inquirer.readthedocs.io/en/latest/), and [simple-chalk](https://pypi.org/project/simple-chalk/). 
+Use the package manager pip to install all needed dependencies for the game. Libraries include [sqlalchemy](https://www.sqlalchemy.org/), [alembic](https://alembic.sqlalchemy.org/en/latest/), [inquirer](https://python-inquirer.readthedocs.io/en/latest/), and [simple-chalk](https://pypi.org/project/simple-chalk/). 
 
 ```bash
 pip install
@@ -23,5 +23,6 @@ python seeds.py
 When you are ready to play the game, cd into the lib directory and run cli.py. 
 
 ```bash
+#./lib 
 python cli.py
 ```
