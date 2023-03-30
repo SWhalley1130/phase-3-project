@@ -1,4 +1,4 @@
-![alt text](https://github.com/SWhalley1130/phase-3-project/blob/main/main_img.png?raw=true)
+![alt text](/main_img.PNG)
 
 ## Introduction
 
