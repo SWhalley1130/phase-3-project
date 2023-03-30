@@ -92,6 +92,11 @@ class Game(Base):
     question_14_id=Column(Integer(), ForeignKey('questions.id'))
     question_15_id=Column(Integer(), ForeignKey('questions.id'))
 
+    def question_list(self):
+        return [self.question_1_id, self.question_2_id,self.question_3_id,self.question_4_id,self.question_5_id,
+                self.question_6_id,self.question_7_id,self.question_8_id,self.question_9_id,self.question_10_id,
+                self.question_11_id,self.question_12_id,self.question_13_id,self.question_14_id,self.question_15_id]
+
 
 
 

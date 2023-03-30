@@ -27,7 +27,7 @@ def add_questions():
     df.to_sql('questions', con=engine, if_exists='append', index=False)
 
 def create_admin_player():
-    player=Player(username="sarah", password="admin")
+    player=Player(username="admin", password="admin")
     session.add(player)
     session.commit()
 
