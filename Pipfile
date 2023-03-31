@@ -9,6 +9,9 @@ sqlalchemy = "*"
 alembic = "*"
 simple-chalk = "*"
 inquirer = "*"
+pandas = "*"
+xlrd = "*"
+openpyxl = "*"
 
 [dev-packages]
 
