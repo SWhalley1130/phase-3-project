@@ -39,8 +39,8 @@ class Question(Base):
     answer_id=Column(Integer(), ForeignKey('answers.id'))
 
     def __repr__(self):
-        return f'Question: {self.question} ' \
-                  +  f'Answer ID: {self.answer_id}'
+        return f'{self.question} '
+
 
 
 class Player(Base):
