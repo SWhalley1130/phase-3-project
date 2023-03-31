@@ -26,7 +26,12 @@ class Answer(Base):
     answer=Column(String())
 
     def __repr__(self):
-        return f'{self.answer} '
+        return f'{self.answer}'
+    
+    def edit_answer(self, session):
+        print(basic(f"The old answer is: {self.answer}\nThe question is set to: {session.query(Question).filter(Question.answer_id==self.id).first()}"))
+        new_answer=input(basic("Please enter a new answer: "))
+        self.answer=new_answer
 
 class Question(Base):
     __tablename__='questions'
@@ -39,8 +44,15 @@ class Question(Base):
     answer_id=Column(Integer(), ForeignKey('answers.id'))
 
     def __repr__(self):
-        return f'{self.question} '
-
+        return f'{self.question}'
+    
+    def edit_question(self, session, editting, inp=None):
+        if editting=="question":
+            print(basic(f"The old question is: {self.question}\nThe answer is set to: {session.query(Answer).filter(Answer.id==self.answer_id).first()}"))
+            new_question=input(basic("Please enter a new question: "))
+            self.question=new_question
+        elif editting=="answer_id":
+            self.answer_id=inp
 
 
 class Player(Base):

@@ -32,8 +32,8 @@ def find_player():
     if current_player==None:
         print(warning("I couldn't find that username in my system."))
         pass
-
     return current_player
+
 
 def create_new_player():
     user=input(basic("Welcome to the game! Please enter a username.\n"))
@@ -41,7 +41,6 @@ def create_new_player():
     if query!=None:
         print(warning("That username is already taken."))
         pass
-
     else:
         passw=input(basic("Please create a password: "))
         
@@ -49,6 +48,7 @@ def create_new_player():
         session.add(player)
         session.commit()
         return session.query(Player).filter(Player.username==user).first()
+
 
 def log_in(player):
     passw=input(basic("Please enter your password: "))
@@ -67,24 +67,25 @@ def log_in(player):
     
 
 def select_mode():
+    print(sc.black.bold.bgGreen(""" SELECT SCREEN """))
     if current_player.username=="admin":
         question=[
             inquirer.List(
                 'mode', 
                 message="What what you like to do?", 
-                choices=["Play New Game", "Play Prior Game", "Edit Username", "Edit Password","Delete Account", "Edit Questions & Answers"],
+                choices=["Play New Game", "Play Prior Game", "Edit Username", "Edit Password","Delete Account", "Quit","Edit Questions & Answers"],
                 )]
     else:
         question=[
             inquirer.List(
                 'mode', 
                 message="What what you like to do?", 
-                choices=["Play New Game", "Play Prior Game", "Edit Username", "Edit Password","Delete Account"],
+                choices=["Play New Game", "Play Prior Game", "Edit Username", "Edit Password","Quit","Delete Account"],
                 )]
     return inquirer.prompt(question, theme=inquirer.themes.GreenPassion())
 
     
-#### generate_game does not currently implament a difficulty rating ####  
+#### generate_game does not currently implement a difficulty rating or category ####  
   
 def generate_game():
     questions=[]
@@ -93,6 +94,7 @@ def generate_game():
         if query not in questions:
             questions.append(query)
     return questions
+
 
 def play_round(question):
     answers=[]
@@ -166,21 +168,140 @@ def end_game(score, player, questions):
     session.add(game)
     session.commit()
 
+
+## The following function is terrible. It more or less works, but should be refactored 
+
 def admin_edit_mode():
+    print(sc.black.bold.bgGreen(""" ADMIN EDIT SCREEN """))
+    print(sc.yellow("You may always reset the database to it's default settings. Please see the README."))
     q=[inquirer.List(
         "a",
         message="What would you like to do?",
-        choices=["Edit Questions", "Edit Answers", "Add Question", "Add Answers"]
+        choices=["Edit Questions", "Edit Answers", "Add Question", "Add Answer", "Delete Question(s)", "Delete Answer(s)", "Exit Edit Mode"]
     )]
     resp=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
     if resp['a']=="Edit Questions":
-        questions=session.query(Question).limit(5).all()
+        all_questions=session.query(Question).all()
         q=[inquirer.Checkbox(
             'a',
             message="Please select which questions you'd like to edit.",
-            choices=[quest.question for quest in questions]
+            ##Checkbox allows a tuple: the first value is what is displayed, the second value is what is stored
+            choices=[((f' {quest.question}, answer: {session.query(Answer).filter(Answer.id==quest.id).first()}'),quest.id) for quest in all_questions]
         )]
-        a=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
+        questions_to_edit=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
+        questions_to_edit=[get_object(quest, "question") for quest in questions_to_edit['a']]
+        for q in questions_to_edit:
+            q.edit_question(session, "question")
+        session.commit()
+    elif resp['a']=="Edit Answers":
+        all_answers=session.query(Answer).all()
+        q=[inquirer.Checkbox(
+            'a',
+            message="Please select which answers you'd like to edit.",
+            choices=[((f' {ans.answer}, question: {session.query(Question).filter(Question.answer_id==ans.id).first()}'), ans.id) for ans in all_answers]
+        )]
+        answers_to_edit=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
+        answers_to_edit=[get_object(ans, "answer") for ans in answers_to_edit['a']]        
+        for a in answers_to_edit:
+            a.edit_answer(session) 
+        session.commit()
+
+    elif resp['a']=='Add Question':
+        print(basic("In it's current state, this game is not implementing it's category or difficulty settings. For now, the default are:"))
+        print(basic("Category: Animal; Difficulty: 1"))
+        new_q=input(basic("Please type your question: "))
+        corresponding_a=input(basic("Now type it's answer: "))
+
+        a_query=session.query(Answer).filter(Answer.answer==corresponding_a).first()
+        q_query=session.query(Question).filter(Question.question==new_q).first()
+
+        if q_query!=None:
+            print(warning("That question is already in use."))
+            pass
+
+        if a_query==None:
+            ans=Answer(answer=corresponding_a,category="animal")
+            session.add(ans)
+            session.commit()
+            new_a_id=session.query(Answer).order_by(Answer.id.desc()).first()
+        else:
+            corr_a_id=session.query(Answer).filter(Answer.answer==corresponding_a).first()
+
+        if q_query==None:
+            if a_query==None:
+                ques=Question(question=new_q, difficulty=1, category="animal", answer_id=new_a_id.id)
+            else:
+                ques=Question(question=new_q, difficulty=1, category="animal", answer_id=corr_a_id.id)
+            session.add(ques)
+            session.commit()
+            
+    elif resp['a']=='Add Answer':
+        print(basic("In it's current state, this game is not implementing it's category or difficulty (for question) settings. For now, the default are:"))
+        print(basic("Category: Animal; Difficulty: 1"))
+        print(sc.yellow("Note that you can edit a question's answer in this mode. To do so, type in the new answer and the existing question that should now point to it."))
+        new_a=input(basic("Please type your answer: "))
+        corresponding_q=input(basic("Now type it's question: "))
+
+        q_query=session.query(Question).filter(Question.question==corresponding_q).first()
+        a_query=session.query(Answer).filter(Answer.answer==new_a).first()
+
+        if a_query!=None:
+            print(warning("That answer is already in use."))
+            pass
+        else:
+            ans=Answer(answer=new_a, category="animal")
+            session.add(ans)
+            session.commit()
+            new_a_id=session.query(Answer).order_by(Answer.id.desc()).first()
+            if q_query==None:
+                ques=Question(question=corresponding_q, category="animal", difficulty=1, answer_id=new_a_id.id)
+                session.add(ques)
+            else:
+                q_query.edit_question(session, "answer_id", new_a_id.id)
+            session.commit()
+
+    elif resp['a']=="Delete Question(s)":
+        all_questions=session.query(Question).all()
+        q=[inquirer.Checkbox(
+            'a',
+            message="Please select which questions you'd like to edit.",
+            choices=[((f' {quest.question}, answer: {session.query(Answer).filter(Answer.id==quest.id).first()}'),quest.id) for quest in all_questions]
+        )]
+        questions_to_edit=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
+        questions_to_edit=[get_object(quest, "question") for quest in questions_to_edit['a']]
+        for q in questions_to_edit:
+            session.delete(q)
+        session.commit()
+
+    elif resp['a']=="Delete Answer(s)":
+        print(warning("If you delete an answer that a question was associated with, that question will also be deleted."))
+        all_answers=session.query(Answer).all()
+        q=[inquirer.Checkbox(
+            'a',
+            message="Please select which answers you'd like to edit.",
+            choices=[((f' {ans.answer}, question: {session.query(Question).filter(Question.answer_id==ans.id).first()}'), ans.id) for ans in all_answers]
+        )]
+        answers_to_edit=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
+        answers_to_edit=[get_object(ans, "answer") for ans in answers_to_edit['a']]        
+        for a in answers_to_edit:
+            print(a.id)
+            query=session.query(Question).filter(Question.answer_id==a.id).all()
+            for i in query:
+                session.delete(i)
+            session.delete(a)
+        session.commit()
+
+    if resp['a']=='Exit Edit Mode':
+        pass
+
+
+def get_object(obj_id, type):
+    if type=="question":
+        return session.query(Question).filter(Question.id==obj_id).first()
+    elif type=="answer":
+        return session.query(Answer).filter(Answer.id==obj_id).first()
+
+    
 
 
 
@@ -204,8 +325,8 @@ if __name__ == '__main__':
                                                                                                                                                 
                                                                                                                                                 
                                                                                                                                                 
-    /$$$$$$        /$$      /$$ /$$ /$$ /$$ /$$                               /$$                     /$$$$                                   
-    /$$__  $$      | $$$    /$$$|__/| $$| $$|__/                              |__/                    /$$  $$                                  
+      /$$$$$$        /$$      /$$ /$$ /$$ /$$ /$$                               /$$                     /$$$$                                   
+     /$$__  $$      | $$$    /$$$|__/| $$| $$|__/                              |__/                    /$$  $$                                  
     | $$  \ $$      | $$$$  /$$$$ /$$| $$| $$ /$$  /$$$$$$  /$$$$$$$   /$$$$$$  /$$  /$$$$$$   /$$$$$$|__/\ $$                                  
     | $$$$$$$$      | $$ $$/$$ $$| $$| $$| $$| $$ /$$__  $$| $$__  $$ |____  $$| $$ /$$__  $$ /$$__  $$   /$$/                                  
     | $$__  $$      | $$  $$$| $$| $$| $$| $$| $$| $$  \ $$| $$  \ $$  /$$$$$$$| $$| $$  \__/| $$$$$$$$  /$$/                                   
@@ -257,23 +378,28 @@ if __name__ == '__main__':
             else:
                 print(warning("Cannot delete admin account."))
         elif answer["mode"]=="Play Prior Game":
-            home_screen="play game"
             gamess=session.query(Game).order_by(Game.score).all()
-            formatted=[f'ID: {g.id} Score: {g.score}, Player: {session.query(Player).filter(Player.id==g.player_id).first().username}' for g in gamess]
-            q=[
-                inquirer.List(
-                'quiz_choice',
-                message="Which game would you like to play?",
-                choices=formatted
-                )
-            ]
-            a=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
-            index=formatted.index(a['quiz_choice'])
-            questions=(gamess[index].question_list())
-            questions=[session.query(Question).filter(Question.id==q).first() for q in questions]
-            play_game(questions)
+            if len(gamess)==0:
+                print(warning("No prior games to choose from."))
+            else:
+                formatted=[f'ID: {g.id} Score: {g.score}, Player: {session.query(Player).filter(Player.id==g.player_id).first().username}' for g in gamess]
+                q=[
+                    inquirer.List(
+                    'quiz_choice',
+                    message="Which game would you like to play?",
+                    choices=formatted
+                    )
+                ]
+                a=inquirer.prompt(q, theme=inquirer.themes.GreenPassion())
+                index=formatted.index(a['quiz_choice'])
+                questions=(gamess[index].question_list())
+                questions=[session.query(Question).filter(Question.id==q).first() for q in questions]
+                play_game(questions)
         elif answer["mode"]=="Edit Questions & Answers":
             admin_edit_mode()
+        elif answer["mode"]=="Quit":
+            print(basic("Thank you for playing!"))
+            exit()
         else: 
             home_screen="play game"
 
